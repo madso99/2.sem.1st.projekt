@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/madso99/2.sem.1st.projekt#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.21.2"
   }
 }
