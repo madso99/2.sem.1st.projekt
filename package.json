@@ -1,0 +1,23 @@
+{
+  "name": "2.sem.1st.projekt",
+  "version": "1.0.0",
+  "description": "En rate limiting mekaniske der bruges til at øge sikkerhed ved login forsøg.",
+  "main": "rate-limit.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/madso99/2.sem.1st.projekt.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/madso99/2.sem.1st.projekt/issues"
+  },
+  "homepage": "https://github.com/madso99/2.sem.1st.projekt#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
