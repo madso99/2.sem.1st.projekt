@@ -18,6 +18,8 @@ Koden virker som den skal og jeg kan godt bruge cURL på mac. Problemet var at t
 
 Så for at jeg kan teste dette program skal jeg have 2 terminaler åben: 1. hvor jeg starter min server 2. hvor jeg skriver min cURL kommando
 
+CORS er også blevet fjernet i koden da jeg arbejder i terminaler som opgaven er lige nu. Hvis man i fremtiden skulle arbejde med klientsiden vil der være relavant at have med.
+
 #### Test IP adresser:
 
 **IP-adresse med forkert adgangskode:** curl -X GET "http://localhost:3000/login?username=wrong&password=wrong" -H "X-Forwarded-For: 192.168.1.100"
