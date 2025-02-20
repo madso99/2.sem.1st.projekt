@@ -21,6 +21,7 @@ Så for at jeg kan teste dette program skal jeg have 2 terminaler åben: 1. hvor
 #### Test IP adresser:
 
 **IP-adresse med forkert adgangskode:** curl -X GET "http://localhost:3000/login?username=wrong&password=wrong" -H "X-Forwarded-For: 192.168.1.100"
+
 **Anden IP-adresseMed forkert adgangskode:** curl -X GET "http://localhost:3000/login?username=wrong&password=wrong" -H "X-Forwarded-For: 203.0.113.42"
 
 **IP-adresse med rigtig adgangskode:** curl -X GET "http://localhost:3000/login?username=user&password=password" -H "X-Forwarded-For: 202.1.223.92"
