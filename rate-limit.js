@@ -12,65 +12,77 @@ app.use((req, res, next) => {
   next();
 });
 
-// 🔹 Test GET route (for at sikre, at serveren svarer korrekt)
+// 🔹 Test GET route for at sikre, at serveren svarer
 app.get("/", (req, res) => {
   res.send("Serveren svarer!");
 });
 
-// 🔹 GET /login - Forklarer, at kun POST er tilladt
-app.get("/login", (req, res) => {
-  res.status(405).json({ message: "Brug POST /login i stedet for GET." });
-});
-
-// 🔹 In-memory rate-limiting (blokering efter 3 forsøg)
+// 🔹 In-memory rate-limiting
 const failedAttempts = {};
-const BLOCK_TIME = 15 * 60 * 1000; // 15 minutter
+const MAX_ATTEMPTS = 3; // Antal forsøg før blokering
+const BLOCK_TIME = 15 * 60 * 1000; // 15 minutter i millisekunder
 
-// 🔹 POST /login - Håndterer login og rate-limiting
-app.post("/login", (req, res) => {
-  console.log("Modtaget POST /login request");
+// 🔹 GET /login - Modtager login-oplysninger via query parameters
+app.get("/login", (req, res) => {
+  console.log("Modtaget GET /login request");
 
   const ip = req.ip || req.headers["x-forwarded-for"];
-  const { username, password } = req.body;
+  const { username, password } = req.query;
 
   if (!failedAttempts[ip]) {
     failedAttempts[ip] = { count: 0, blockedUntil: null };
   }
 
-  // Hvis IP'en er blokeret
+  // ✅ Først tjekker vi, om loginoplysningerne er korrekte
+  if (username === "user" && password === "password") {
+    console.log(`✅ Login succesfuldt fra IP ${ip}`);
+    failedAttempts[ip] = { count: 0, blockedUntil: null };
+    return res.json({ message: "Login succesfuldt!" });
+  }
+
+  // ❌ Hvis login er forkert, tjek om IP'en er blokeret
   if (
     failedAttempts[ip].blockedUntil &&
     Date.now() < failedAttempts[ip].blockedUntil
   ) {
+    const remainingTime = Math.ceil(
+      (failedAttempts[ip].blockedUntil - Date.now()) / 1000
+    );
     return res
       .status(429)
-      .json({ message: "For mange fejlede loginforsøg. Prøv igen senere." });
+      .json({
+        message: `For mange fejlede loginforsøg. Prøv igen om ${remainingTime} sekunder.`,
+      });
   }
 
-  // Simpel login-check (du kan ændre dette til en database senere)
-  if (username !== "user" || password !== "password") {
-    failedAttempts[ip].count++;
+  // ❌ Hvis login er forkert, opdater fejltælleren
+  failedAttempts[ip].count++;
 
-    if (failedAttempts[ip].count >= 3) {
-      failedAttempts[ip].blockedUntil = Date.now() + BLOCK_TIME;
-      return res
-        .status(429)
-        .json({
-          message:
-            "For mange fejlede loginforsøg. Din IP er blokeret i 15 minutter.",
-        });
-    }
+  // Beregn tilbageværende forsøg
+  const remainingAttempts = MAX_ATTEMPTS - failedAttempts[ip].count;
+  console.log(
+    `❌ Forkert login fra IP ${ip}. Forsøg tilbage: ${remainingAttempts}`
+  );
+
+  if (failedAttempts[ip].count >= MAX_ATTEMPTS) {
+    failedAttempts[ip].blockedUntil = Date.now() + BLOCK_TIME;
+    console.log(`🚨 IP ${ip} er nu blokeret i 15 minutter.`);
     return res
-      .status(401)
-      .json({ message: "Forkert brugernavn eller adgangskode." });
+      .status(429)
+      .json({
+        message:
+          "For mange fejlede loginforsøg. Din IP er blokeret i 15 minutter.",
+      });
   }
 
-  // Hvis login lykkes, nulstil fejltæller
-  failedAttempts[ip] = { count: 0, blockedUntil: null };
-  res.json({ message: "Login succesfuldt!" });
+  return res
+    .status(401)
+    .json({
+      message: `Forkert brugernavn eller adgangskode. ${remainingAttempts} forsøg tilbage.`,
+    });
 });
 
-// 🔹 Fejlhåndtering for ukendte routes (skal være SIDST!)
+// 🔹 Fejlhåndtering for ukendte routes
 app.use((req, res) => {
   console.log(`Ukendt route: ${req.method} ${req.url}`);
   res.status(404).send("Route ikke fundet");
