@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
 // 🔹 In-memory rate-limiting
 const failedAttempts = {};
 const MAX_ATTEMPTS = 3; // Antal forsøg før blokering
-const BLOCK_TIME = 60 * 1000; // 1 minut i millisekunder
+const BLOCK_TIME = 5 * 60 * 1000; // 5 minutter i millisekunder
 
 // 🔹 GET /login - Modtager login-oplysninger via query parameters
 app.get("/login", (req, res) => {
@@ -66,9 +66,10 @@ app.get("/login", (req, res) => {
 
   if (failedAttempts[ip].count >= MAX_ATTEMPTS) {
     failedAttempts[ip].blockedUntil = Date.now() + BLOCK_TIME;
-    console.log(`🚨 IP ${ip} er nu blokeret i 1 minut.`);
+    console.log(`🚨 IP ${ip} er nu blokeret i 5 minutter.`);
     return res.status(429).json({
-      message: "For mange fejlede loginforsøg. Din IP er blokeret i 1 minut.",
+      message:
+        "For mange fejlede loginforsøg. Din IP er blokeret i 5 minutter.",
       remainingTime: BLOCK_TIME / 1000, // Viser 60 sekunder
     });
   }
